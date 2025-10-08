@@ -1,7 +1,9 @@
-import { Pool } from 'pg';
-import { dbConfig } from './config.js'; // Import credentials from config.js
+import pkg from 'pg'; 
+const { Pool } = pkg; 
+// import { Pool } from 'pg';
+import { dbConfig } from './config.js'; 
 
-const pool = new Pool(dbConfig); // Use dbConfig for the database connection
+const pool = new Pool(dbConfig); 
 
 pool.connect((err, client, release) => {
     if (err) {

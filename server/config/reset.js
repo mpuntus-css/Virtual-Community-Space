@@ -52,14 +52,21 @@
 
 import { pool } from './database.js';
 
+const dropTable = async (tableName) => {
+    try {
+        await pool.query(`DROP TABLE IF EXISTS ${tableName} CASCADE;`);
+        console.log(`✅ Table "${tableName}" dropped successfully`);
+    } catch (err) {
+        console.error(`⚠️ Error dropping table "${tableName}":`, err);
+    }
+};
+
 const createLocationsTable = async () => {
     const createTableQuery = `
-        DROP TABLE IF EXISTS locations;
-
         CREATE TABLE IF NOT EXISTS locations (
             id SERIAL PRIMARY KEY,
             name VARCHAR(255) NOT NULL,
-            address TEXT NOT NULL
+            address TEXT NOT NULL           
         );
     `;
 
@@ -73,8 +80,6 @@ const createLocationsTable = async () => {
 
 const createEventsTable = async () => {
     const createTableQuery = `
-        DROP TABLE IF EXISTS events;
-
         CREATE TABLE IF NOT EXISTS events (
             id SERIAL PRIMARY KEY,
             name VARCHAR(255) NOT NULL,
@@ -93,9 +98,18 @@ const createEventsTable = async () => {
 };
 
 const resetDatabase = async () => {
-    await createLocationsTable();
-    await createEventsTable();
-    console.log('✅ Database reset complete');
+    try {
+        console.log('🔄 Resetting database...');
+        await dropTable('events'); // Drop dependent table first
+        await dropTable('locations'); // Drop parent table next
+        await createLocationsTable();
+        await createEventsTable();
+        console.log('✅ Database reset complete');
+    } catch (err) {
+        console.error('⚠️ Error resetting database:', err);
+    } finally {
+        pool.end(); // Close the database connection
+    }
 };
 
 resetDatabase();
